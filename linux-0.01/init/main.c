@@ -3,16 +3,14 @@
 #include <time.h>
 
 /*
- * we need this inline - forking from kernel space will result
- * in NO COPY ON WRITE (!!!), until an execve is executed. This
- * is no problem, but for the stack. This is handled by not letting
- * main() use the stack at all after fork(). Thus, no function
- * calls - which means inline code for fork too, as otherwise we
- * would use the stack upon exit from 'fork()'.
+ * 我们需要把这些定义为内联 —— 在内核空间执行 fork 不会触发写时复制
+ *（NO COPY ON WRITE !!!），直到执行 execve 为止。除了栈之外，这本身
+ * 没有问题。处理办法是在 fork() 之后完全不让 main() 使用栈。因此，
+ * 不能有任何函数调用 —— 这意味着 fork 也必须用内联代码，否则我们
+ * 会在从 'fork()' 退出时使用栈。
  *
- * Actually only pause and fork are needed inline, so that there
- * won't be any messing with the stack from main(), but we define
- * some others too.
+ * 实际上只有 pause 和 fork 需要内联，这样 main() 才不会对栈造成
+ * 任何干扰，不过我们也顺便定义了其他几个。
  */
 static inline _syscall0(int,fork)
 static inline _syscall0(int,pause)
@@ -42,10 +40,9 @@ extern long kernel_mktime(struct tm * tm);
 extern long startup_time;
 
 /*
- * Yeah, yeah, it's ugly, but I cannot find how to do this correctly
- * and this seems to work. I anybody has more info on the real-time
- * clock I'd be interested. Most of this was trial and error, and some
- * bios-listing reading. Urghh.
+ * 是的，是的，这很难看，但我找不到正确的做法，而这个似乎能用。
+ * 如果有谁掌握更多关于实时时钟（real-time clock）的资料，我会很感兴趣。
+ * 这里大部分内容都是反复试错得来的，外加读了一些 bios 的清单。唉。
  */
 
 #define CMOS_READ(addr) ({ \
@@ -76,11 +73,10 @@ static void time_init(void)
 	startup_time = kernel_mktime(&time);
 }
 
-int main(void)		/* This really IS void, no error here. */
-{			/* The startup routine assumes (well, ...) this */
+int main(void)		/* 它确实是 void，这里没有错误。 */
+{			/* 启动例程（嗯，……）假定它是这样的 */
 /*
- * Interrupts are still disabled. Do necessary setups, then
- * enable them
+ * 中断此时仍处于禁用状态。先完成必要的初始化设置，然后再开启中断。
  */
 	time_init();
 	tty_init();
@@ -90,15 +86,15 @@ int main(void)		/* This really IS void, no error here. */
 	hd_init();
 	sti();
 	move_to_user_mode();
-	if (!fork()) {		/* we count on this going ok */
+	if (!fork()) {		/* 我们指望这次能顺利成功 */
 		init();
 	}
 /*
- *   NOTE!!   For any other task 'pause()' would mean we have to get a
- * signal to awaken, but task0 is the sole exception (see 'schedule()')
- * as task 0 gets activated at every idle moment (when no other tasks
- * can run). For task0 'pause()' just means we go check if some other
- * task can run, and if not we return here.
+ *   注意！！   对于任何其他任务，'pause()' 都意味着我们必须收到一个
+ * 信号才能被唤醒，但任务 0 是唯一的例外（参见 'schedule()'），因为
+ * 任务 0 会在每一个空闲时刻（当没有其他任务可运行时）被激活。对任务 0
+ * 来说，'pause()' 仅仅意味着我们去检查是否有其他任务可以运行，如果
+ * 没有就返回到这里。
  */
 	for(;;) pause();
 
@@ -143,5 +139,5 @@ void init(void)
 	j=wait(&i);
 	printf("child %d died with code %04x\n",j,i);
 	sync();
-	_exit(0);	/* NOTE! _exit, not exit() */
+	_exit(0);	/* 注意！是 _exit，不是 exit() */
 }
