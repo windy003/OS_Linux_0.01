@@ -1,7 +1,7 @@
-#include <stdio.h>	/* fprintf */
-#include <stdlib.h>	/* contains exit */
-#include <sys/types.h>	/* unistd.h needs this */
-#include <unistd.h>	/* contains read/write */
+#include <stdio.h>	/* fprintf 函数 */
+#include <stdlib.h>	/* 包含 exit 函数 */
+#include <sys/types.h>	/* unistd.h 需要这个头文件 */
+#include <unistd.h>	/* 包含 read/write 函数 */
 #include <fcntl.h>
 #include <string.h>
 
@@ -57,15 +57,15 @@ int main(int argc, char ** argv)
 	if ((id=open(argv[2],O_RDONLY,0))<0)
 		die("Unable to open 'system'");
 //	if (read(id,buf,GCC_HEADER) != GCC_HEADER)
-//		die("Unable to read header of 'system'");
+//		die("无法读取 'system' 的文件头");
 //	if (((long *) buf)[5] != 0)
-//		die("Non-GCC header of 'system'");
+//		die("'system' 不是 GCC 文件头");
 	for (i=0 ; (c=read(id,buf,sizeof buf))>0 ; i+=c )
 		if (write(1,buf,c)!=c)
 			die("Write call failed");
 
-	/* only needed by qemu. ( qemu may not read last sector if
- 	 * size is < 512 bytes ) 
+	/* 仅 qemu 需要。( 如果大小小于 512 字节,
+ 	 * qemu 可能不会读取最后一个扇区 )
  	 */
 	memset(buf,0,512);
 	//write(1,buf,512);	
