@@ -2,16 +2,15 @@
 #define _ERRNO_H
 
 /*
- * ok, as I hadn't got any other source of information about
- * possible error numbers, I was forced to use the same numbers
- * as minix.
- * Hopefully these are posix or something. I wouldn't know (and posix
- * isn't telling me - they want $$$ for their f***ing standard).
+ * 好吧，由于我没有任何其他关于可能的错误号的信息来源，
+ * 我被迫使用了和 minix 相同的错误号。
+ * 希望这些是符合 posix 标准或诸如此类的。我也不知道（而且
+ * posix 也不会告诉我——他们想为他们那该死的标准收 $$$ 钱）。
  *
- * We don't use the _SIGN cludge of minix, so kernel returns must
- * see to the sign by themselves.
+ * 我们没有使用 minix 的 _SIGN（符号）那套蹩脚做法，所以内核
+ * 返回时必须自己处理好正负号。
  *
- * NOTE! Remember to change strerror() if you change this file!
+ * 注意！如果你修改了本文件，记得也要修改 strerror()！
  */
 
 extern int errno;
