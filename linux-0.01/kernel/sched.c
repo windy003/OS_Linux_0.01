@@ -1,8 +1,8 @@
 /*
- * 'sched.c' is the main kernel file. It contains scheduling primitives
- * (sleep_on, wakeup, schedule etc) as well as a number of simple system
- * call functions (type getpid(), which just extracts a field from
- * current-task
+ * 'sched.c' 是主要的内核文件。它包含了调度的基本原语
+ * （sleep_on、wakeup、schedule 等），以及若干简单的系统
+ * 调用函数（例如 getpid()，它只是从当前任务中
+ * 提取一个字段）
  */
 #include <linux/sched.h>
 #include <linux/kernel.h>
@@ -39,8 +39,8 @@ struct {
 	short b;
 	} stack_start = { & user_stack [PAGE_SIZE>>2] , 0x10 };
 /*
- *  'math_state_restore()' saves the current math information in the
- * old math state array, and gets the new ones from the current task
+ *  'math_state_restore()' 将当前的数学（协处理器）信息保存到
+ * 旧的数学状态数组中，并从当前任务取得新的状态信息
  */
 void math_state_restore()
 {
@@ -56,21 +56,21 @@ void math_state_restore()
 }
 
 /*
- *  'schedule()' is the scheduler function. This is GOOD CODE! There
- * probably won't be any reason to change this, as it should work well
- * in all circumstances (ie gives IO-bound processes good response etc).
- * The one thing you might take a look at is the signal-handler code here.
+ *  'schedule()' 是调度器函数。这是一段好代码！可能没有
+ * 任何理由去修改它，因为它在所有情况下都应该工作良好
+ * （即能为 IO 密集型进程提供良好的响应等）。你唯一可能
+ * 需要看一看的是这里的信号处理代码。
  *
- *   NOTE!!  Task 0 is the 'idle' task, which gets called when no other
- * tasks can run. It can not be killed, and it cannot sleep. The 'state'
- * information in task[0] is never used.
+ *   注意！！任务 0 是“空闲（idle）”任务，当没有其他任务可
+ * 运行时就会调用它。它不能被杀死，也不能睡眠。task[0] 中的
+ * “state”（状态）信息从不被使用。
  */
 void schedule(void)
 {
 	int i,next,c;
 	struct task_struct ** p;
 
-/* check alarm, wake up any interruptible tasks that have got a signal */
+/* 检查 alarm（定时器），唤醒任何已收到信号的可中断任务 */
 
 	for(p = &LAST_TASK ; p > &FIRST_TASK ; --p)
 		if (*p) {
@@ -82,7 +82,7 @@ void schedule(void)
 				(*p)->state=TASK_RUNNING;
 		}
 
-/* this is the scheduler proper: */
+/* 这才是真正的调度器主体： */
 
 	while (1) {
 		c = -1;
@@ -245,9 +245,9 @@ void sched_init(void)
 	}
 	ltr(0);
 	lldt(0);
-	outb_p(0x36,0x43);		/* binary, mode 3, LSB/MSB, ch 0 */
-	outb_p(LATCH & 0xff , 0x40);	/* LSB */
-	outb(LATCH >> 8 , 0x40);	/* MSB */
+	outb_p(0x36,0x43);		/* 二进制，模式 3，先低字节后高字节，通道 0 */
+	outb_p(LATCH & 0xff , 0x40);	/* 低字节（LSB） */
+	outb(LATCH >> 8 , 0x40);	/* 高字节（MSB） */
 	set_intr_gate(0x20,&timer_interrupt);
 	outb(inb_p(0x21)&~0x01,0x21);
 	set_system_gate(0x80,&system_call);
